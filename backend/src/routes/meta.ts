@@ -24,6 +24,7 @@ const metaRoutes: FastifyPluginAsyncTypebox = async (app) => {
             needsSetup: Type.Boolean({ description: 'true, solange noch kein Benutzer existiert (erster Benutzer wird Admin).' }),
             accessTokenTtlSec: Type.Integer(),
             contentTokenTtlSec: Type.Integer(),
+            pdfExport: Type.Boolean({ description: 'true, wenn der Server PDFs erzeugen kann (Chromium vorhanden).' }),
           }),
         },
       },
@@ -37,6 +38,7 @@ const metaRoutes: FastifyPluginAsyncTypebox = async (app) => {
         needsSetup,
         accessTokenTtlSec: services.config.accessTokenTtlSec,
         contentTokenTtlSec: services.config.contentTokenTtlSec,
+        pdfExport: services.pdf.available,
       };
     },
   );

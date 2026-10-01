@@ -10,6 +10,14 @@ COPY . .
 RUN npm run build
 
 FROM node:22-bookworm-slim
+# PDF-Export braucht Chromium (~400 MB). Ohne: docker build --build-arg WITH_PDF=0 .
+ARG WITH_PDF=1
+RUN if [ "$WITH_PDF" = "1" ]; then \
+      apt-get update && apt-get install -y --no-install-recommends chromium fonts-liberation fonts-noto-color-emoji \
+      && rm -rf /var/lib/apt/lists/*; \
+    fi
+# Im Container ist die Chromium-Sandbox ohne zusätzliche Rechte nicht nutzbar; der Container selbst isoliert.
+ENV PDF_NO_SANDBOX=1
 ENV NODE_ENV=production \
     DATA_DIR=/data \
     FRONTEND_DIR=/app/frontend/dist \

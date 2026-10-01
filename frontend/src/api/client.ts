@@ -119,6 +119,27 @@ async function request<T>(path: string, opts: RequestOptions = {}): Promise<T> {
   return data as T;
 }
 
+async function downloadFile(path: string, title: string, ext: string): Promise<void> {
+  const res = await rawRequest(path, {});
+  if (!res.ok) {
+    let message = 'Download fehlgeschlagen.';
+    try {
+      message = ((await res.json()) as { error?: { message?: string } }).error?.message ?? message;
+    } catch {
+      /* keine JSON-Fehlerantwort */
+    }
+    throw new ApiError(res.status, 'download', message);
+  }
+  const blob = await res.blob();
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `${title.replace(/[^\w.-]+/g, '_').slice(0, 60) || 'archiv'}.${ext}`;
+  document.body.append(a);
+  a.click();
+  a.remove();
+  setTimeout(() => URL.revokeObjectURL(a.href), 10_000);
+}
+
 export const api = {
   meta: () => request<Meta>('/meta', { auth: false }),
 
@@ -160,18 +181,9 @@ export const api = {
   archiveView: (id: string) => request<ArchiveView>(`/archives/${id}/view`),
 
   /** ZIP-Export: authentifizierter Download über fetch → Blob → Datei speichern. */
-  async downloadArchive(id: string, title: string): Promise<void> {
-    const res = await rawRequest(`/archives/${id}/download`, {});
-    if (!res.ok) throw new ApiError(res.status, 'download', 'Download fehlgeschlagen.');
-    const blob = await res.blob();
-    const a = document.createElement('a');
-    a.href = URL.createObjectURL(blob);
-    a.download = `${title.replace(/[^\w.-]+/g, '_').slice(0, 60) || 'archiv'}.zip`;
-    document.body.append(a);
-    a.click();
-    a.remove();
-    setTimeout(() => URL.revokeObjectURL(a.href), 10_000);
-  },
+  downloadArchive: (id: string, title: string) => downloadFile(`/archives/${id}/download`, title, 'zip'),
+  /** PDF-Export (serverseitig mit Chromium gerendert; kann einige Sekunden dauern). */
+  downloadArchivePdf: (id: string, title: string) => downloadFile(`/archives/${id}/pdf`, title, 'pdf'),
 };
 
 /** Content-URLs (iframe/WebView) bestehen aus Server-Basis + serverrelativem Pfad. */

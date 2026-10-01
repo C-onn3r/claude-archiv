@@ -91,7 +91,8 @@
                     "registrationOpen",
                     "needsSetup",
                     "accessTokenTtlSec",
-                    "contentTokenTtlSec"
+                    "contentTokenTtlSec",
+                    "pdfExport"
                   ],
                   "properties": {
                     "name": {
@@ -112,6 +113,10 @@
                     },
                     "contentTokenTtlSec": {
                       "type": "integer"
+                    },
+                    "pdfExport": {
+                      "type": "boolean",
+                      "description": "true, wenn der Server PDFs erzeugen kann (Chromium vorhanden)."
                     }
                   }
                 }
@@ -3022,6 +3027,37 @@
                 }
               }
             }
+          }
+        }
+      }
+    },
+    "/api/v1/archives/{id}/pdf": {
+      "get": {
+        "summary": "Archiv als PDF exportieren",
+        "tags": [
+          "archives"
+        ],
+        "description": "Rendert den archivierten Stand mit Headless-Chromium (offline, ohne Netzwerkzugriff). `501 pdf_unavailable`, wenn der Server kein Chromium hat (siehe `pdfExport` in `/meta`).",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 36,
+              "maxLength": 36
+            },
+            "in": "path",
+            "name": "id",
+            "required": true
+          }
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response"
           }
         }
       }

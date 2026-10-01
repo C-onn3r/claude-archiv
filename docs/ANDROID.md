@@ -58,6 +58,7 @@ GET  /api/v1/archives/{id}                                      → Polling bis 
 GET  /api/v1/archives?q=&status=&limit=&offset=                 → { items, total, limit, offset }
 GET  /api/v1/archives/{id}/view                                 → { viewUrl: "/archive/<token>/<id>/index.html", expiresAt }
 GET  /api/v1/archives/{id}/download                             → application/zip (Bearer-Header)
+GET  /api/v1/archives/{id}/pdf                                  → application/pdf (Bearer-Header; 501 pdf_unavailable, wenn der Server kein Chromium hat – siehe `pdfExport` in /meta)
 ```
 
 * **Online ansehen:** `webView.loadUrl(baseUrl + viewUrl)`.

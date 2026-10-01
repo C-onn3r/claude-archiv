@@ -2,6 +2,20 @@ import { randomBytes } from 'node:crypto';
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 
+const CHROMIUM_CANDIDATES = [
+  '/usr/bin/chromium',
+  '/usr/bin/chromium-browser',
+  '/usr/bin/google-chrome',
+  '/usr/bin/google-chrome-stable',
+  '/snap/bin/chromium',
+];
+
+function findChromium(env: NodeJS.ProcessEnv): string | null {
+  const explicit = env.CHROMIUM_PATH;
+  if (explicit) return existsSync(explicit) ? explicit : null;
+  return CHROMIUM_CANDIDATES.find((p) => existsSync(p)) ?? null;
+}
+
 export interface Config {
   env: 'development' | 'production' | 'test';
   host: string;
@@ -36,6 +50,13 @@ export interface Config {
     maxAssets: number;
     maxFetchConcurrency: number;
     maxIframeDepth: number;
+  };
+  pdf: {
+    /** Pfad zu Chromium/Chrome; null = nicht verfügbar (PDF-Export deaktiviert). */
+    chromiumPath: string | null;
+    /** Chromium-Sandbox abschalten (nur nötig in Containern ohne User-Namespaces). */
+    noSandbox: boolean;
+    timeoutMs: number;
   };
   rateLimit: {
     global: number;
@@ -117,6 +138,11 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env, overrides: Part
       maxAssets: int(env, 'ARCHIVE_MAX_ASSETS', 1000),
       maxFetchConcurrency: int(env, 'ARCHIVE_FETCH_CONCURRENCY', 8),
       maxIframeDepth: int(env, 'ARCHIVE_MAX_IFRAME_DEPTH', 1),
+    },
+    pdf: {
+      chromiumPath: findChromium(env),
+      noSandbox: bool(env, 'PDF_NO_SANDBOX', false),
+      timeoutMs: int(env, 'PDF_TIMEOUT_MS', 60_000),
     },
     rateLimit: {
       global: int(env, 'RATE_LIMIT_PER_MIN', 600),

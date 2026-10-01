@@ -178,6 +178,31 @@ const archiveRoutes: FastifyPluginAsyncTypebox = async (app) => {
   );
 
   app.get(
+    '/:id/pdf',
+    {
+      ...auth,
+      schema: {
+        tags: ['archives'],
+        security,
+        summary: 'Archiv als PDF exportieren',
+        description: 'Rendert den archivierten Stand mit Headless-Chromium (offline, ohne Netzwerkzugriff). `501 pdf_unavailable`, wenn der Server kein Chromium hat (siehe `pdfExport` in `/meta`).',
+        params: Id,
+      },
+    },
+    async (request, reply) => {
+      const row = owned(request.params.id, request.user!.id);
+      if (row.status !== 'done') throw HttpError.conflict('Das Archiv ist noch nicht fertig.', 'not_ready');
+      const pdf = await services.pdf.render(row);
+      const safeName = (row.title || 'archive').replace(/[^\w.-]+/g, '_').slice(0, 60) || 'archive';
+      return reply
+        .header('content-type', 'application/pdf')
+        .header('content-disposition', `attachment; filename="${safeName}.pdf"`)
+        .header('cache-control', 'private, no-store')
+        .send(pdf);
+    },
+  );
+
+  app.get(
     '/:id/download',
     {
       ...auth,

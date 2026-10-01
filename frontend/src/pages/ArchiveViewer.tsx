@@ -3,8 +3,9 @@ import { Link, useNavigate, useParams } from 'react-router-dom';
 import { api, contentUrl } from '../api/client';
 import type { Archive } from '../api/types';
 import { ErrorBanner, Spinner, StatusBadge } from '../components/Common';
-import { IconDownload, IconExternal, IconTrash } from '../components/Icons';
+import { IconDownload, IconExternal, IconPdf, IconTrash } from '../components/Icons';
 import { errorMessage, formatBytes, formatDateTime } from '../util';
+import { useMeta } from '../useMeta';
 import { FRAME_SANDBOX } from './LiveViewer';
 
 export function ArchiveViewer() {
@@ -13,6 +14,8 @@ export function ArchiveViewer() {
   const [archive, setArchive] = useState<Archive | null>(null);
   const [frameSrc, setFrameSrc] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [pdfBusy, setPdfBusy] = useState(false);
+  const meta = useMeta();
 
   const load = useCallback(async () => {
     try {
@@ -34,6 +37,19 @@ export function ArchiveViewer() {
     const t = setTimeout(() => void load(), 1500);
     return () => clearTimeout(t);
   }, [archive, load]);
+
+  const exportPdf = async () => {
+    if (!archive) return;
+    setPdfBusy(true);
+    setError(null);
+    try {
+      await api.downloadArchivePdf(archive.id, archive.title);
+    } catch (e) {
+      setError(errorMessage(e));
+    } finally {
+      setPdfBusy(false);
+    }
+  };
 
   const remove = async () => {
     if (!archive || !window.confirm(`„${archive.title}“ endgültig löschen?`)) return;
@@ -66,6 +82,11 @@ export function ArchiveViewer() {
             <a className="icon-btn" href={archive.finalUrl ?? archive.url} target="_blank" rel="noopener noreferrer" title="Originalseite öffnen">
               <IconExternal />
             </a>
+            {archive.status === 'done' && meta?.pdfExport && (
+              <button className="icon-btn" title="Als PDF exportieren" disabled={pdfBusy} onClick={() => void exportPdf()}>
+                {pdfBusy ? <span className="spinner small" aria-hidden="true" /> : <IconPdf />}
+              </button>
+            )}
             {archive.status === 'done' && (
               <button className="icon-btn" title="ZIP herunterladen" onClick={() => api.downloadArchive(archive.id, archive.title).catch((e) => setError(errorMessage(e)))}>
                 <IconDownload />

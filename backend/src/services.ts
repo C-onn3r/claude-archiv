@@ -1,5 +1,6 @@
 import type { FastifyBaseLogger } from 'fastify';
 import type { Services } from './app-types.js';
+import { PdfService } from './archive/pdf.js';
 import { ArchiveService } from './archive/service.js';
 import { ArchiveStorage } from './archive/storage.js';
 import { TokenService } from './auth/tokens.js';
@@ -26,6 +27,7 @@ export function createServices(config: Config, log: FastifyBaseLogger): Services
     tokens: new TokenService(config),
     proxyFetcher,
     archiveStorage,
+    pdf: new PdfService(config, archives, archiveStorage),
     archiveService: new ArchiveService({ config, repo: archives, storage: archiveStorage, fetcher: archiveFetcher, log }),
   };
 }

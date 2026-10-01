@@ -3,13 +3,16 @@ import { Link, useNavigate } from 'react-router-dom';
 import { api } from '../api/client';
 import type { Archive, ArchiveStatus } from '../api/types';
 import { ErrorBanner, Spinner, StatusBadge } from '../components/Common';
-import { IconArchive, IconDownload, IconEdit, IconGlobe, IconRetry, IconTrash } from '../components/Icons';
+import { IconArchive, IconDownload, IconEdit, IconGlobe, IconPdf, IconRetry, IconTrash } from '../components/Icons';
 import { errorMessage, formatBytes, formatRelative, hostOf } from '../util';
+import { useMeta } from '../useMeta';
 
 const PAGE = 20;
 
 export function Dashboard() {
   const navigate = useNavigate();
+  const meta = useMeta();
+  const [pdfBusy, setPdfBusy] = useState<string | null>(null);
   const [input, setInput] = useState('');
   const [includeScripts, setIncludeScripts] = useState(true);
   const [submitting, setSubmitting] = useState(false);
@@ -102,6 +105,18 @@ export function Dashboard() {
       setItems((cur) => cur.map((x) => (x.id === a.id ? updated : x)));
     } catch (e) {
       setError(errorMessage(e));
+    }
+  };
+
+  const exportPdf = async (a: Archive) => {
+    setPdfBusy(a.id);
+    setError(null);
+    try {
+      await api.downloadArchivePdf(a.id, a.title);
+    } catch (e) {
+      setError(errorMessage(e));
+    } finally {
+      setPdfBusy(null);
     }
   };
 
@@ -201,6 +216,11 @@ export function Dashboard() {
               </div>
               <StatusBadge status={a.status} />
               <div className="actions">
+                {a.status === 'done' && meta?.pdfExport && (
+                  <button className="icon-btn" title="Als PDF exportieren" disabled={pdfBusy === a.id} onClick={() => void exportPdf(a)}>
+                    {pdfBusy === a.id ? <span className="spinner small" aria-hidden="true" /> : <IconPdf />}
+                  </button>
+                )}
                 {a.status === 'done' && (
                   <button className="icon-btn" title="ZIP herunterladen" onClick={() => api.downloadArchive(a.id, a.title).catch((e) => setError(errorMessage(e)))}>
                     <IconDownload />

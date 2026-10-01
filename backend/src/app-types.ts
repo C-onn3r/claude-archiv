@@ -7,6 +7,7 @@ import type { ArchiveRepo } from './repos/archives.js';
 import type { SafeFetcher } from './net/safe-fetch.js';
 import type { ArchiveService } from './archive/service.js';
 import type { ArchiveStorage } from './archive/storage.js';
+import type { PdfService } from './archive/pdf.js';
 
 /** Alle langlebigen Abhängigkeiten der Anwendung an einer Stelle (einfach austauschbar in Tests). */
 export interface Services {
@@ -20,6 +21,7 @@ export interface Services {
   proxyFetcher: SafeFetcher;
   archiveStorage: ArchiveStorage;
   archiveService: ArchiveService;
+  pdf: PdfService;
 }
 
 declare module 'fastify' {

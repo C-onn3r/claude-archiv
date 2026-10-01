@@ -50,6 +50,7 @@ export interface Meta {
   needsSetup: boolean;
   accessTokenTtlSec: number;
   contentTokenTtlSec: number;
+  pdfExport: boolean;
 }
 
 export interface ProxyLink {

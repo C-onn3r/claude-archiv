@@ -9,7 +9,7 @@ angebunden werden kann.
 | **Benutzer & Auth** | Registrierung/Login, JWT-Access-Tokens (kurzlebig) + rotierende Refresh-Tokens, Rollen (Admin/Benutzer), Benutzerverwaltung, Passwortwechsel |
 | **Live-Proxy** | Ziel-URL wird serverseitig abgerufen und umgeschrieben (HTML, CSS, Weiterleitungen, Formulare, dynamische Requests per Client-Shim), sodass Links und Assets **innerhalb der App navigierbar** bleiben |
 | **Archivierung** | Seite + CSS (rekursiv, `@import`, Fonts, Hintergrundbilder), JavaScript, Bilder (`src`/`srcset`/Lazy-Load), Medien, Icons, same-origin-iframes werden geladen, Pfade relativ umgeschrieben und lokal abgelegt – dauerhaft offline nutzbar |
-| **Viewer** | iframe-Viewer für Live-Proxy (Adressleiste, Vor/Zurück, „Archivieren“) und für Offline-Archive; ZIP-Export |
+| **Viewer** | iframe-Viewer für Live-Proxy (Adressleiste, Vor/Zurück, „Archivieren“) und für Offline-Archive; Export als **ZIP** und **PDF** |
 | **API** | Versionierte REST-API unter `/api/v1`, OpenAPI 3 (`/api/docs`, [`docs/openapi.json`](docs/openapi.json)) |
 
 ## Tech-Stack
@@ -59,6 +59,18 @@ npm run dev:backend    # http://localhost:3000  (tsx watch)
 npm run dev:frontend   # http://localhost:5173  (Vite, leitet /api, /proxy, /archive ans Backend)
 ```
 
+### PDF-Export (optional)
+
+Der PDF-Export rendert das Archiv mit Headless-Chromium. Das Archiv wird dabei **nicht** aus dem Netz geladen: Jede Browser-Anfrage wird
+aus dem Archivverzeichnis beantwortet, alles andere blockiert. Ohne Chromium bleibt die Funktion einfach ausgeblendet (`pdfExport: false` in `/api/v1/meta`).
+
+```bash
+sudo apt install chromium        # Debian/Ubuntu/Raspberry Pi OS (Paketname ggf. chromium-browser)
+# anderer Pfad: CHROMIUM_PATH=/pfad/zu/chrome npm start
+```
+
+Das Docker-Image bringt Chromium mit (`--build-arg WITH_PDF=0` lässt es weg). Es läuft immer nur ein Rendering gleichzeitig.
+
 ### Erster Start
 
 1. Weboberfläche öffnen – bei leerer Datenbank erscheint **„Administrator anlegen“**. Der erste Benutzer wird Admin.
@@ -71,7 +83,7 @@ Alle Einstellungen: [`.env.example`](.env.example) (alles optional; das JWT-Secr
 ### Tests
 
 ```bash
-npm test               # 64 Tests: Auth, Benutzerverwaltung, Proxy, SSRF, Archiv-Engine, Rewriter
+npm test               # Auth, Benutzerverwaltung, Proxy, SSRF, Archiv-Engine, Rewriter, PDF (mit Chromium)
 npm run typecheck
 npm run openapi        # docs/openapi.json neu erzeugen
 ```
@@ -93,6 +105,7 @@ Vollständig: Swagger-UI unter `/api/docs`, Spezifikation in [`docs/openapi.json
 | GET/PATCH/DELETE | `/api/v1/archives/{id}` | Details, Titel/Tags ändern, löschen |
 | GET | `/api/v1/archives/{id}/view` | Offline-Ansicht → `GET {viewUrl}` in iframe/WebView |
 | GET | `/api/v1/archives/{id}/download` | ZIP-Export (inkl. `archive.json`) |
+| GET | `/api/v1/archives/{id}/pdf` | PDF-Export (Headless-Chromium, rein offline aus dem Archiv; `501`, wenn kein Chromium installiert ist) |
 | GET | `/api/v1/archives/{id}/resources` | Erfasste/fehlgeschlagene Ressourcen |
 | POST | `/api/v1/archives/{id}/retry` | Fehlgeschlagenes Archiv neu starten |
 
