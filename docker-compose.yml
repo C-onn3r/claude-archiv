@@ -1,0 +1,16 @@
+services:
+  archiver:
+    build: .
+    ports:
+      - "3000:3000"
+    volumes:
+      - archiv-data:/data
+    environment:
+      # Beim ersten Start registriert sich der erste Benutzer als Administrator (über die Weboberfläche).
+      ALLOW_REGISTRATION: "false"
+      # Hinter einem Reverse-Proxy (HTTPS-Terminierung) auf "true" setzen:
+      TRUST_PROXY: "false"
+    restart: unless-stopped
+
+volumes:
+  archiv-data:
