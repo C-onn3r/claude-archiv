@@ -10,6 +10,7 @@ angebunden werden kann.
 | **Live-Proxy** | Ziel-URL wird serverseitig abgerufen und umgeschrieben (HTML, CSS, Weiterleitungen, Formulare, dynamische Requests per Client-Shim), sodass Links und Assets **innerhalb der App navigierbar** bleiben |
 | **Archivierung** | Seite + CSS (rekursiv, `@import`, Fonts, Hintergrundbilder), JavaScript, Bilder (`src`/`srcset`/Lazy-Load), Medien, Icons, same-origin-iframes werden geladen, Pfade relativ umgeschrieben und lokal abgelegt – dauerhaft offline nutzbar |
 | **Viewer** | iframe-Viewer für Live-Proxy (Adressleiste, Vor/Zurück, „Archivieren“) und für Offline-Archive; Export als **ZIP** und **PDF** |
+| **Android-App** | Native App (Kotlin/Compose, Material 3) – siehe [`android/`](android/README.md), fertige Debug-APK in `android/apk/` |
 | **API** | Versionierte REST-API unter `/api/v1`, OpenAPI 3 (`/api/docs`, [`docs/openapi.json`](docs/openapi.json)) |
 
 ## Tech-Stack

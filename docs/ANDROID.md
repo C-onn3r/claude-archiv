@@ -1,5 +1,7 @@
 # Anbindung einer Android-App
 
+Eine fertige App liegt unter [`../android`](../android/README.md). Dieses Dokument beschreibt die API-Anbindung für eigene Clients.
+
 Die API ist vollständig getrennt von der Weboberfläche: Die Web-App nutzt exakt dieselben Endpunkte wie ein nativer Client.
 Es gibt keine Cookies/Sessions, keine CORS-Abhängigkeit und keine HTML-Antworten außerhalb von `/proxy/…` und `/archive/…`.
 
